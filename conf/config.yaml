@@ -1,0 +1,30 @@
+random_seed: 0
+work_dir: /work/robinpark
+root_dir: ${work_dir}/AutoLabelClassifier
+raw_dicom_folder: ${work_dir}/data-apr23/PID010A
+clean_path: ${work_dir}/PID010A_clean
+unpaired_reports: /work/rhydian/ProcessedSpinalMRIReports/
+model_weights_save_path: /scratch/shared/beegfs/robinpark
+osc_reports: ${work_dir}/AutoLabelClassifier/data/osclmric_reports
+
+patient_metadata: ${clean_path}/patient_metadata.csv
+conclusion_training_data: ${clean_path}/segmented_unpaired_reports_sum_no_len_limit.csv
+
+train_labeled_data: ${clean_path}/segmented_train_manually_labeled_set.csv
+labeled_data: ${clean_path}/segmented_test_manually_labeled_set.csv
+no_hist_labeled_data: ${clean_path}/segmented_test_manually_labeled_set.csv 
+full_ncimi_data: ${clean_path}/unique_reports.csv
+
+osc_train_data: ${osc_reports}/osclmric_reports_labeled_train.csv
+osc_test_data: ${osc_reports}/osclmric_reports_labeled_test.csv
+
+llm_results_path: ${clean_path}
+inf_labels: ${work_dir}/AutoLabelClassifier/data/report_labels
+
+zephyr_model: zephyr-uprep-conclusion-lora/checkpoint-40000
+
+condition: ALL_CANCER
+cancer_definition: Spinal cancer includes malignant lesions that originate from the spine or spinal cord and metastatic or secondary tumours that have spread from another site to the spine.
+stenosis_definition: Stenosis is any narrowing or compression of the spinal canal or nerves, including disc protrusions, impingement of nerve roots, or compromise of recesses.
+ivd_level: L5-S1
+ivd: False
