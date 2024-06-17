@@ -4,8 +4,8 @@ torch
 transformers
 datasets
 accelerate
-scikit - learn
+scikit-learn
 spacy
-hydra - core
+hydra-core
 bioc
 wandb
