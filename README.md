@@ -33,6 +33,7 @@ The experiments conducted for the paper are in the `scripts` and `notebooks` dir
 To-dos:
 - [ ] Add citation + bibtex to README (important)
 - [ ] Add interface to llama model (important)
+- [ ] Add license, let's talk about this soon (important)
 - [ ] Add single stage option to report labelling pipeline
 - [ ] CLI interface for instruction finetuning the model
 - [ ] Add option to specify command line arguments by yaml file
