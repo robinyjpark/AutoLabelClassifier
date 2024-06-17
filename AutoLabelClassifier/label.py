@@ -98,7 +98,7 @@ def main(
             {"role": "system", "content": f"{prompt1}/nReport: {example}"},
             {
                 "role": "user",
-                "content": f"Write a summary for the above report, focusing on findings related to {condition}, according to this defintion: {definition}",
+                "content": f"Write a summary for the above report, focusing on findings related to {condition}, according to this definition: {definition}",
             },
         ]
         eval_prompt = tokenizer.apply_chat_template(messages, tokenize=False)
