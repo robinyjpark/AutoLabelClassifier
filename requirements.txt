@@ -1,0 +1,11 @@
+numpy
+pandas
+torch
+transformers
+datasets
+accelerate
+scikit-learn
+spacy
+hydra-core
+bioc
+wandb
