@@ -32,21 +32,17 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = True
 
 
-cln_path = '/work/robinpark/PID010A_clean'
+cln_path = '/work/robinpark/NCIMI_clean'
 metadata_path = f'{cln_path}/patient_metadata.csv'
 unique_reports_path = f'{cln_path}/segmented_unique_reports.csv'
-labels_path = '/work/robinpark/AutoLabelClassifier/data/report_labels'
-ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/ncimi_ivd_arrays'
+labels_path = '/work/robinpark/AutoLabelClassifier/data/report_labels/april2024/summary-query/base-base'
+ivd_arrays_path = '/work/robinpark/NCIMI_clean/ncimi_ivd_arrays'
+pickle_path = f'{ivd_arrays_path}/april2024_splits'
 
 
 # Import extracted labels 
-filepath = f"{labels_path}/con_lora_base_2step_ALL_CANCER_new_template_yesno_scores_have_prompt"
-df_labels1 = pd.read_csv(f'{filepath}1.csv',index_col=0)
-df_labels2 = pd.read_csv(f'{filepath}2.csv',index_col=0)
-df_labels3 = pd.read_csv(f'{filepath}3.csv',index_col=0)
-df_labels4 = pd.read_csv(f'{filepath}4.csv',index_col=0)
-
-df_labels = pd.concat([df_labels1, df_labels2, df_labels3, df_labels4]).reset_index(drop=True) 
+filepath = f"{labels_path}/llama3_base_2step_ALL_CANCER_new_template_yesno_scores_have_spec_summary_prompt"
+df_labels = pd.read_csv(f'{filepath}.csv',index_col=0).reset_index(drop=True)
 
 print('Importing and thresholding automated labels...')
 # Threshold based on normalised scores
@@ -62,7 +58,7 @@ df_labels['yes_norm'] = df_labels.apply(lambda x: norm_scores_yes(x), axis=1)
 df_labels['no_norm'] = df_labels.apply(lambda x: norm_scores_no(x), axis=1)
 
 df_labels['results']=0
-df_labels.loc[df_labels.yes_norm>0.0005798592464998364, 'results'] = 1
+df_labels.loc[df_labels.yes_norm>0.9301171898841858, 'results'] = 1
 
 # Get unique reports
 df_all = pd.read_csv(unique_reports_path)
@@ -75,7 +71,7 @@ scans = glob.glob(f'{ivd_arrays_path}/*/*/*.npy')
 df_paths = pd.DataFrame(scans,columns=['path_long'])
 
 # Split column path into multiple columns
-df_paths['path'] = df_paths['path_long'].str.slice(58,)
+df_paths['path'] = df_paths['path_long'].str.slice(45,)
 
 # Expand path to three columns
 df_paths['pat_id'] = df_paths['path'].str.slice(0,7)
@@ -85,7 +81,7 @@ df_paths['level'] = df_paths['path'].str.slice(25,).str.replace('.npy','')
 
 # Sort by pat_id and study_id and keep the last two ser_id in the group
 df_subset = df_paths[['pat_id','study_id','ser_id']].drop_duplicates().sort_values(
-    by=['pat_id','study_id','ser_id']).groupby(['pat_id','study_id']).tail(2)
+    by=['pat_id','study_id','ser_id']) # .groupby(['pat_id','study_id']).tail(2)
 
 # Only keep pat_id and study_ids in df_subset (last two series in group)
 df_paths_subset = df_paths.merge(df_subset, on=['pat_id','study_id','ser_id'], how='inner')
@@ -98,12 +94,44 @@ list_vert_keep = [x for x in list_vert if 'L' in x or 'T' in x]
 df_metadata = pd.read_csv(metadata_path, index_col=0, low_memory=False)
 
 # Keep T2 vertebrae that are not localisers 
-df_t2 = df_metadata.loc[(df_metadata.series_desc.str.find('t2')>-1) & (df_metadata.main_direction=='sagittal')]
-df_t2_stu = df_t2[['pat_id_coded','study_id_coded','ser_id_coded']].drop_duplicates().reset_index(drop=True)
+# df_t2 = df_metadata.loc[
+#     (df_metadata.series_desc.str.find('t2')>-1) & 
+#     (df_metadata.main_direction=='sagittal') & 
+#     (df_metadata.series_desc.str.find('local')==-1)]
+# df_t2_stu = df_t2[['pat_id_coded','study_id_coded','ser_id_coded']].drop_duplicates().reset_index(drop=True)
+
+df_t2_sag = df_metadata.loc[
+    ((df_metadata.protocol_name.str.find('t2') > -1) & (df_metadata.protocol_name.str.find('sag') > -1)) |
+    ((df_metadata.series_desc.str.find('t2') > -1) & (df_metadata.series_desc.str.find('sag') > -1))]
+
+df_ser = df_t2_sag.sort_values(
+    ['pat_id_coded','study_id_coded','ser_id_coded','date', 'time']
+    )[['pat_id_coded','study_id_coded','ser_id_coded','date','time']].drop_duplicates().reset_index(drop=True)
+
+# Get the last date time for each ser_id_coded
+df_ser_unique = df_ser.groupby('study_id_coded').last().reset_index(drop=True)
+
+df_t2_stu = df_ser.loc[
+    df_ser.ser_id_coded.isin(df_ser_unique.ser_id_coded)
+    ][['pat_id_coded','study_id_coded','ser_id_coded']].drop_duplicates().reset_index(drop=True)
 
 df_paths_subset_t2 = df_paths_subset.merge(
     df_t2_stu, left_on=['pat_id','study_id','ser_id'], 
     right_on=['pat_id_coded','study_id_coded','ser_id_coded'], how='inner') 
+
+def get_voxel_volume(row):
+    folder = f'{cln_path}/paired_scans_reports'
+    dicom_file_path = f"{folder}/{row['pat_id_coded']}/{row['study_id_coded']}/{row['ser_id_coded']}/DICOM004.dcm"
+    try:
+        ds = pydicom.dcmread(dicom_file_path)
+        return ds.PixelSpacing[0], ds.PixelSpacing[1], ds.SliceThickness
+    except:
+        return np.nan, np.nan, np.nan
+
+# Apply the function to each row to create a new column 'C'
+df_t2_stu[['voxel_width', 'voxel_height', 'slice_thickness']] = df_t2_stu.apply(get_voxel_volume, axis=1, result_type='expand')
+
+df_t2_stu = df_t2_stu.loc[df_t2_stu.voxel_width<1.1]
 
 # Only keep levels in list
 df_paths_subset_t2 = df_paths_subset_t2.loc[df_paths_subset_t2.level.isin(list_vert_keep)]
@@ -155,19 +183,19 @@ train_pat_list = list(set(all_pat_list) - set(test_pat_list))
 list_pat_id_date_level = list(ivd_dicts.keys())
 
 # Split train pat list into train and val
-# train_pat_list, val_pat_list = train_test_split(train_pat_list, test_size=0.2, random_state=seed)
+train_pat_list, val_pat_list = train_test_split(train_pat_list, test_size=0.2, random_state=seed)
 
-# # Create a dictionary with patient splits
-# ncimi_train_val_test_split = {}
-# ncimi_train_val_test_split['train'] = train_pat_list
-# ncimi_train_val_test_split['val'] = val_pat_list
-# ncimi_train_val_test_split['test'] = test_pat_list
+# Create a dictionary with patient splits
+ncimi_train_val_test_split = {}
+ncimi_train_val_test_split['train'] = train_pat_list
+ncimi_train_val_test_split['val'] = val_pat_list
+ncimi_train_val_test_split['test'] = test_pat_list
 
-# # Save the splits
-# with open(f'{ivd_arrays_path}/ncimi_train_val_test_split.pkl', 'wb') as handle:
-#     pickle.dump(ncimi_train_val_test_split, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# Save the splits
+with open(f'{pickle_path}/ncimi_train_val_test_split.pkl', 'wb') as handle:
+    pickle.dump(ncimi_train_val_test_split, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-with open(f'{ivd_arrays_path}/ncimi_train_val_test_split.pkl', 'rb') as handle:
+with open(f'{pickle_path}/ncimi_train_val_test_split.pkl', 'rb') as handle:
     ncimi_train_val_test_split = pickle.load(handle)
 
 train_pat_list = ncimi_train_val_test_split['train']
@@ -264,7 +292,7 @@ ncimi_array_dict['ivd_test_array_names'] = ivd_test_array_names
 
 print('Saving arrays...')
 # Pickle the dictionary
-with open(f'{ivd_arrays_path}/ncimi_arrays_dict.pkl', 'wb') as handle:
+with open(f'{pickle_path}/ncimi_arrays_dict.pkl', 'wb') as handle:
     pickle.dump(ncimi_array_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Create arrays for each pat_id_date: one for labels and one for ivd arrays
@@ -297,7 +325,7 @@ samples['val_samples'] = val_samples
 samples['test_samples'] = test_samples
 
 # Pickle the dictionary
-with open(f'{ivd_arrays_path}/ncimi_samples_dict.pkl', 'wb') as handle:
+with open(f'{pickle_path}/ncimi_samples_dict.pkl', 'wb') as handle:
     pickle.dump(samples, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 print('Done!')

@@ -1,13 +1,17 @@
 import torch
 import pickle
+import random
+import cv2
 import numpy as np
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
 
 from PIL import Image
 from torch.autograd import Variable
 from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.transforms.functional import affine
 
-ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays'
+ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays/april2024_splits'
 
 print('Load pickled arrays...')
 # Load pickled arrays
@@ -40,14 +44,14 @@ resnet18.to('cuda:2')
 resnet18.eval()
 
 # Define a function to extract features from the model
-def extract_features(input_tensor):
+def extract_features(input_tensor, augment=False):
     with torch.no_grad():
         input_tensor=input_tensor.to('cuda:2')
         features = resnet18(input_tensor)
     return features
 
 # Preprocess the input images
-def get_embeddings(loader):
+def get_embeddings(loader, augment=False):
     preprocess = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.Grayscale(num_output_channels=3),  # Convert single-channel image to 3-channel
@@ -58,8 +62,86 @@ def get_embeddings(loader):
     # Extract features for each slice of each MRI volume
     features = []
     for input_images, labels in loader:
-        input_images = input_images.to('cuda:2')
+        _, num_slices, num_rows, num_cols = input_images[-1].shape
+        max_cols = num_cols - 48
+        min_cols =  48
+        max_rows = num_rows - 40
+        min_rows = 40
+
+        ## AUGMENT ##
+        if augment:
+            # Slice shift +/- 2
+            shift_slice = random.randint(-2, 2)
+            input_images = np.roll(input_images, shift_slice, axis=2)
+            if shift_slice > 0:
+                input_images[:,:,0:shift_slice,:,:] = 0
+            elif shift_slice < 0:
+                input_images[:,:,num_slices+shift_slice:num_slices,:,:] = 0
+
+            # Slice flip
+            if random.random() > 0.5:
+                input_images = np.flip(input_images, axis=2).copy()
+
+            # Intensity +/- 0.1
+            input_images = input_images + random.uniform(-0.1, 0.1)
+
+            # Translation +/- 32x 24y pixels 
+            shift_cols = random.randint(-32, 22)
+            max_cols += shift_cols
+            min_cols += shift_cols
+            shift_rows = random.randint(-24, 24)
+            max_rows += shift_rows
+            min_rows += shift_rows
+            
+            # Scale +/- 0.1
+            col_range = max_cols-min_cols
+            row_range = max_rows-min_rows
+            bb_scale = np.array(random.uniform(0.9,1.1))
+            max_cols = max_cols + col_range*(bb_scale - 1.0)
+            min_cols = min_cols - col_range*(bb_scale - 1.0)
+            max_rows = max_rows + row_range*(bb_scale - 1.0)
+            min_rows = min_rows - row_range*(bb_scale - 1.0)
+
+            # Sanity Check
+            if max_cols >= num_cols:
+                min_cols = min_cols + (max_cols - num_cols)
+                max_cols = num_cols - 1
+            if max_rows >= num_rows:
+                min_rows = min_rows + (max_rows - num_rows)
+                max_rows = num_rows - 1
+            if min_cols < 0:
+                max_cols = max_cols + abs(min_cols)
+                min_cols = 0
+            if min_rows < 0:
+                max_rows = max_rows + abs(min_rows)
+                min_rows = 0
+            max_cols = int(np.round(max_cols))
+            min_cols = int(np.round(min_cols))
+            max_rows = int(np.round(max_rows))
+            min_rows = int(np.round(min_rows))
+
+            # Rotation +/- 15.0 - THIS IS GIVING ERRORS
+            rotation_matrix = cv2.getRotationMatrix2D((num_cols/2, num_rows/2), random.uniform(-15.0,15.0), 1)
+            # print(np.transpose(input_images[0][0][:3], (1, 2, 0)).shape)
+            input_images1 = np.transpose(cv2.warpAffine(np.transpose(input_images[0][0][:3], (1, 2, 0)), rotation_matrix, (num_cols, num_rows), flags=cv2.INTER_CUBIC))
+            input_images2 = np.transpose(cv2.warpAffine(np.transpose(input_images[0][0][3:6], (1, 2, 0)), rotation_matrix, (num_cols, num_rows), flags=cv2.INTER_CUBIC))
+            input_images3 = np.transpose(cv2.warpAffine(np.transpose(input_images[0][0][6:9], (1, 2, 0)), rotation_matrix, (num_cols, num_rows), flags=cv2.INTER_CUBIC))
+
+            input_images = np.concatenate((input_images1, input_images2, input_images3), axis=0)
+            # print(input_images.shape)
+            input_images = cv2.resize(input_images[:, min_rows:max_rows,min_cols:max_cols], (224, 112), interpolation = cv2.INTER_CUBIC)
+            # print(input_images.shape)
+            
+            # Transform back into original shape
+            input_images = np.transpose(input_images, (2, 0, 1))[None,None,:,:,:]
+            print(input_images.shape)
+            input_images = torch.from_numpy(input_images).to('cuda:2')
+
+        else: 
+            input_images = input_images.to('cuda:2')
+        
         labels = labels.to('cuda:2')
+
         for volume_idx in range(input_images.size(0)):
             volume_features = []
             for slice_idx in range(input_images.size(2)):
@@ -88,9 +170,9 @@ def get_embeddings(loader):
 
 print('Extract features...')
 # Extract features for the training, validation, and test sets
-train_features = get_embeddings(train_loader)
-val_features = get_embeddings(val_loader)
-test_features = get_embeddings(test_loader)
+train_features = get_embeddings(train_loader, augment=False)
+val_features = get_embeddings(val_loader, augment=False)
+test_features = get_embeddings(test_loader, augment=False)
 
 print('Transfer tensors to CPU...')
 train_features_cpu = [i.cpu() for i in train_features]

@@ -218,7 +218,7 @@ def merge_report(row):
                     li_new.append(row['seg_text'][key])
         return '\n\n'.join(li_new).replace('[JOINED]','') # Remove joined tag
 
-@hydra.main(version_base="1.2", config_path="../conf", config_name="config")
+@hydra.main(version_base="1.2", config_path="../../conf", config_name="config")
 def run_segmentation(cfg: DictConfig) -> None:
 
     df_test = pd.read_csv(cfg.full_ncimi_data, index_col=0)
@@ -262,7 +262,7 @@ def run_segmentation(cfg: DictConfig) -> None:
     seg_reports['seg_length'] = seg_reports['report_no_hist'].apply(lambda x: len(x))
     seg_reports = seg_reports.loc[seg_reports['seg_length']>100].reset_index(drop=True)
     
-    seg_reports.to_csv(f'{cfg.clean_path}/segmented_unique_reports.csv')
+    seg_reports.to_csv(f'{cfg.updated_clean_path}/segmented_unique_reports.csv')
 
 if __name__ == "__main__":
     run_segmentation()

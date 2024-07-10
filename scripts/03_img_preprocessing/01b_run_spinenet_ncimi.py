@@ -13,14 +13,18 @@ from tqdm import tqdm
 from spinenet import SpineNet
 from spinenet.io import load_dicoms_from_folder, save_vert_dicts_to_csv
 
-scan_folder = '/work/robinpark/PID010A_clean/paired_scans_reports'
+scan_folder = '/work/robinpark/NCIMI_clean/paired_scans_reports'
 
 spnt = SpineNet(device='cuda:0', verbose=True)
 
 # Get sagittal series 
-df_metadata = pd.read_csv('/work/robinpark/PID010A_clean/patient_metadata.csv', index_col=0, low_memory=False)
+df_metadata = pd.read_csv('/work/robinpark/NCIMI_clean/patient_metadata.csv', index_col=0, low_memory=False)
 
-dedup_series = df_metadata[['ser_id_coded','main_direction']].drop_duplicates().drop_duplicates(
+df_t2_sag = df_metadata.loc[
+    ((df_metadata.protocol_name.str.find('t2') > -1) & (df_metadata.protocol_name.str.find('sag') > -1)) |
+    ((df_metadata.series_desc.str.find('t2') > -1) & (df_metadata.series_desc.str.find('sag') > -1))]
+
+dedup_series = df_t2_sag[['ser_id_coded','main_direction']].drop_duplicates().drop_duplicates(
     subset='ser_id_coded', keep=False)
 
 sagittal_series = dedup_series.loc[dedup_series.main_direction=='sagittal']
@@ -58,7 +62,7 @@ for index, row in tqdm(df_unique_sag_ser.iterrows(), total=df_unique_sag_ser.sha
         for i, ivd_dict in enumerate(ivd_dicts):
             ivd_level = ivd_dict['level_name'].replace('-','_')
             ivd_volume = ivd_dict['volume']
-            ivd_array_path = f"/work/robinpark/AutoLabelClassifier/data/ncimi_ivd_arrays/{pat_id}"
+            ivd_array_path = f"/work/robinpark/NCIMI_clean/ncimi_ivd_arrays/{pat_id}"
             pat_subfolder = f"{ivd_array_path}/{stu_id}_{ser_id}"
             if not os.path.exists(ivd_array_path):
                 os.mkdir(ivd_array_path)

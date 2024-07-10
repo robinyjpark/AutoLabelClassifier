@@ -2,12 +2,14 @@ import torch
 import pickle
 import numpy as np
 import torchvision.transforms as transforms
+import torchvision.transforms.functional as F
 
 from PIL import Image
 from torch.autograd import Variable
 from torchvision.models import resnet18, ResNet18_Weights
+from torchvision.transforms.functional import affine
 
-ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/ncimi_ivd_arrays'
+ivd_arrays_path = '/work/robinpark/NCIMI_clean/ncimi_ivd_arrays/april2024_splits'
 
 print('Load pickled arrays...')
 # Load pickled arrays
@@ -47,7 +49,7 @@ def extract_features(input_tensor):
     return features
 
 # Preprocess the input images
-def get_embeddings(loader):
+def get_embeddings(loader, augment=False):
     preprocess = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.Grayscale(num_output_channels=3),  # Convert single-channel image to 3-channel
@@ -91,9 +93,9 @@ def get_embeddings(loader):
 
 print('Extract features...')
 # Extract features for the training, validation, and test sets
-train_features = get_embeddings(train_loader)
-val_features = get_embeddings(val_loader)
-test_features = get_embeddings(test_loader)
+train_features = get_embeddings(train_loader, augment=False)
+val_features = get_embeddings(val_loader, augment=False)
+test_features = get_embeddings(test_loader, augment=False)
 
 print('Transfer tensors to CPU...')
 train_features_cpu = [i.cpu() for i in train_features]
