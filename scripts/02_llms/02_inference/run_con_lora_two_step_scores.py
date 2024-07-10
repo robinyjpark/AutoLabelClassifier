@@ -78,6 +78,22 @@ def run_llm(cfg: DictConfig) -> None:
         labels = df_test['result']
         column = 'report'
 
+    elif cfg.condition == 'cauda_equina_train': 
+        condition = 'cauda equina'
+        data = cfg.ce_train_data
+        definition = cfg.cauda_equina_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
+        column = 'report'
+    
+    elif cfg.condition == 'cauda_equina_test': 
+        condition = 'cauda equina'
+        data = cfg.ce_test_data
+        definition = cfg.cauda_equina_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
+        column = 'report'
+
     prompt1 = f"""\
         You are a radiologist. Your job is to diagnose {condition} using a medical report.
         Tell the truth and answer as precisely as possible.
@@ -154,7 +170,7 @@ def run_llm(cfg: DictConfig) -> None:
         labeled_reports.yes_score > labeled_reports.no_score, 
         'results'] = 1
     
-    labeled_reports.to_csv(f'{cfg.clean_path}/con_lora_two_step_scores/con_lora_2step_{cfg.condition}_new_template_yesno_scores_have_prompt.csv')
+    labeled_reports.to_csv(f'{cfg.llm_results_path}/april2024/summary-query/sft-sft/con_lora_2step_{cfg.condition}_new_template_yesno_scores_have_prompt.csv')
 
 if __name__ == "__main__":
     run_llm()
