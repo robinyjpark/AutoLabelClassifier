@@ -89,7 +89,7 @@ def main(
     """
 
     # TODO: load in data
-    df = pd.read_csv(data, low_memory=False, index_col=0)
+    df = pd.read_csv(data, low_memory=False)
     print(f"Loaded in data with shape: {df.shape}")
 
     print("Making prompts...")
