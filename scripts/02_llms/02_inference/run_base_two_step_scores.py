@@ -116,8 +116,6 @@ def run_llm(cfg: DictConfig) -> None:
         data = '/work/robinpark/NCIMI_clean/segmented_unique_reports.csv'
         definition = cfg.cancer_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
-        #to_drop = ['STU1690', 'STU1691', 'STU2217', 'STU2218']
-        #df_test = df_test.loc[df_test.study_id_coded.isin(to_drop) == False].reset_index(drop=True)[:1795].reset_index(drop=True) 
         df_test = df_test.drop([1795, 2210]).reset_index(drop=True) # 1795, 2210
         column = 'report_no_hist'
 
@@ -225,7 +223,7 @@ def run_llm(cfg: DictConfig) -> None:
     labeled_reports = pd.DataFrame(
         {'report_no_hist': df_test[column],
         'pred_conclusion': li_con,
-        #'labels': labels,
+        #'labels': labels, ## comment out if running on data without existing labels 
         'yes_score': li_yes,
         'no_score': li_no})
     
