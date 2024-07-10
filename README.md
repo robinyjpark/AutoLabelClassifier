@@ -11,7 +11,7 @@ The code has been tested on python3.10 on ubuntu linux. If you use or adapt this
 `make venv; source venv/bin/activate`
 Alternatively you can try to install the repo on top of an existing venv with `pip install .`
 
-2. Try to run the example by `make test`. This will attempt to label sample reports in the `example_data` directory.
+2. Try to run the example by `make test`. This will attempt to label sample reports in the `example_data` directory. Sample reports were sourced from [USARAD](https://usarad.com/sample-reports/sample-mri.html).
 
 ## CLI Usage
 
