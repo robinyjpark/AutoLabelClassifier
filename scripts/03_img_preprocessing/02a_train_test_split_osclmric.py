@@ -22,7 +22,7 @@ from sklearn.metrics import roc_auc_score, f1_score, balanced_accuracy_score, ro
 
 
 # DEFINE SEEDS
-seed=0
+seed=1
 random.seed(seed)
 os.environ['PYTHONHASHSEED'] = str(seed)
 np.random.seed(seed)
@@ -34,19 +34,20 @@ torch.backends.cudnn.benchmark = True
 
 all_reports_path = '/work/robinpark/PID010A_clean/all_osclmric_reports.csv'
 test_reports_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_reports'
-labels_path = '/work/robinpark/AutoLabelClassifier/data/report_labels'
-ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays'
+labels_path = '/work/robinpark/AutoLabelClassifier/data/report_labels/april2024/summary-query/base-base'
+raw_ivds_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays'
+ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays/april2024_splits'
 
 # IVD-level Labels
 def import_labels(level):
-    df_labels = pd.read_csv(f'{labels_path}/con_lora_base_2step_ALL_STENOSIS{level}_new_template_yesno_scores_have_prompt.csv',index_col=0).reset_index(drop=True)
+    df_labels = pd.read_csv(f'{labels_path}/llama3_base_2step_ALL_STENOSIS{level}_new_template_yesno_scores_have_spec_summary_prompt.csv',index_col=0).reset_index(drop=True)
     df_labels['level'] = level
     return df_labels 
 
 print('Importing and thresholding automated labels...')
-df_labels_l5s1 = import_labels('L5S1')
-df_labels_l4l5 = import_labels('L4L5')
 df_labels_l3l4 = import_labels('L3L4')
+df_labels_l4l5 = import_labels('L4L5')
+df_labels_l5s1 = import_labels('L5S1')
 
 # Threshold scores to create binary labels
 def norm_scores_yes(row):
@@ -58,9 +59,9 @@ def norm_scores_no(row):
     return F.softmax(scores,dim=0)[1].item()
 
 df_threshold_list = [
-    (df_labels_l3l4, 0.0009224715176969767),
-    (df_labels_l4l5, 0.0009928893996402621), 
-    (df_labels_l5s1, 0.0009309677989222109),
+    (df_labels_l3l4, 0.5957925319671631),
+    (df_labels_l4l5, 0.9059188365936279), 
+    (df_labels_l5s1, 0.8589565753936768),
     ]
 
 for df_labels, threshold in df_threshold_list:
@@ -83,7 +84,7 @@ print('Creating list of scans...')
 # Create list of scans
 t2_s1_scans = []
 for level in ['L3_L4', 'L5_S1', 'L4_L5']: 
-    t2_s1_scans_level = glob.glob(f'{ivd_arrays_path}/*/*/{level}.npy')
+    t2_s1_scans_level = glob.glob(f'{raw_ivds_path}/*/*/{level}.npy')
     t2_s1_scans.extend(t2_s1_scans_level)
 
 print('Organising scans with same patient ID and date...')
@@ -125,19 +126,19 @@ test_pat_list = list(df_test_labels['pat_id'].unique())
 test_pat_date_list = list(df_test_labels['pat_id_date'].unique())
 train_pat_list = list(set(all_pat_list) - set(test_pat_list))
 
-## Split train pat list into train and val
+# Split train pat list into train and val
 
-# train_pat_list, val_pat_list = train_test_split(train_pat_list, test_size=0.1, random_state=seed)
+train_pat_list, val_pat_list = train_test_split(train_pat_list, test_size=0.1, random_state=seed)
 
-# # create a dictionary with patient splits
-# osclmric_train_val_test_split = {}
-# osclmric_train_val_test_split['train'] = train_pat_list
-# osclmric_train_val_test_split['val'] = val_pat_list
-# osclmric_train_val_test_split['test'] = test_pat_list
+# create a dictionary with patient splits
+osclmric_train_val_test_split = {}
+osclmric_train_val_test_split['train'] = train_pat_list
+osclmric_train_val_test_split['val'] = val_pat_list
+osclmric_train_val_test_split['test'] = test_pat_list
 
-# # save the splits
-# with open('/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays/osclmric_train_val_test_split.pkl', 'wb') as handle:
-#     pickle.dump(osclmric_train_val_test_split, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# save the splits
+with open(f'{ivd_arrays_path}/osclmric_train_val_test_split.pkl', 'wb') as handle:
+    pickle.dump(osclmric_train_val_test_split, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 # Import split data
 with open(f'{ivd_arrays_path}/osclmric_train_val_test_split.pkl', 'rb') as handle:

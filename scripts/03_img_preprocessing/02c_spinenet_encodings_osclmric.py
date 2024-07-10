@@ -11,7 +11,7 @@ from torch.autograd import Variable
 
 torch.manual_seed(0)
 
-ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays'
+ivd_arrays_path = '/work/robinpark/AutoLabelClassifier/data/osclmric_ivd_arrays/april2024_splits'
 
 print('Load pickled arrays...')
 # Load pickled arrays
