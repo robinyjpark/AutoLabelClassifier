@@ -10,13 +10,13 @@ from transformers.pipelines.pt_utils import KeyDataset
 
 
 @torch.no_grad()
-def generate_summary(model, tokenizer, prompt, device):
+def generate_summary(model, tokenizer, prompt, device, ASSISTANT_HEADER):
     input_ids = tokenizer(prompt, return_tensors="pt")["input_ids"].to(device)
     gen_ids = model.generate(
         input_ids=input_ids, max_new_tokens=1024, repetition_penalty=1.15
     )[0]
-    output = tokenizer.decode(gen_ids, skip_special_tokens=True)
-    answer = output.split("<|assistant|>")[-1]
+    output = tokenizer.decode(gen_ids, skip_special_tokens=False)
+    answer = output.split(ASSISTANT_HEADER)[-1].replace('<|eot_id|>','')
     return answer
 
 
@@ -78,7 +78,10 @@ def main(
     YES_ID = tokenizer(YES_TOKEN, add_special_tokens=False).input_ids[0]
     NO_ID = tokenizer(NO_TOKEN, add_special_tokens=False).input_ids[0]
 
-    tokenizer.pad_token = "[PAD]"
+    if model_name == "HuggingFaceH4/zephyr-7b-beta":
+        ASSISTANT_HEADER = '<|assistant|>'
+    elif model_name == "meta-llama/Meta-Llama-3-8B-Instruct":
+        ASSISTANT_HEADER = "<|start_header_id|>assistant<|end_header_id|>"
 
     prompt1 = f"""\
         You are a radiologist. Your job is to diagnose {condition} using a medical report. 
@@ -92,6 +95,7 @@ def main(
     print("Making prompts...")
     outputs = []
     for i in tqdm(range(len(df))):
+        pat_id = df["pat_id"].iloc[i]
         example = df["report"].iloc[i]
 
         messages = [
@@ -102,7 +106,7 @@ def main(
             },
         ]
         eval_prompt = tokenizer.apply_chat_template(messages, tokenize=False)
-        gen_summary = generate_summary(model, tokenizer, eval_prompt, device)
+        gen_summary = generate_summary(model, tokenizer, eval_prompt, device, ASSISTANT_HEADER)
         # Now answer the question
         messages += [
             {"role": "assistant", "content": f"{gen_summary}"},
@@ -113,7 +117,7 @@ def main(
         ]
         eval_prompt = (
             tokenizer.apply_chat_template(messages, tokenize=False)
-            + "<|assistant|>\nANSWER: "
+            + f"{ASSISTANT_HEADER}\nANSWER: "
         )
         yes_score, no_score = generate_yes_no_scores(
             model, tokenizer, YES_ID, NO_ID, eval_prompt
@@ -125,6 +129,7 @@ def main(
         print("No Score: ", no_score)
         outputs.append(
             {
+                "pat_id": pat_id,
                 "report": example,
                 "summary": gen_summary,
                 f"yes_score": yes_score,
