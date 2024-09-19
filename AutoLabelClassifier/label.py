@@ -1,5 +1,5 @@
 """
-Code for labelling the rpeorts
+Code for labelling the reports
 """
 
 import torch
@@ -112,7 +112,7 @@ def main(
             {"role": "assistant", "content": f"{gen_summary}"},
             {
                 "role": "user",
-                "content": f"Based on your summary, does the patient have {condition}? Answer 'yes' for yes, 'no' for no. Only output one token after 'ANSWER: ",
+                "content": f"Based on your summary, does the patient have {condition}? Answer 'yes' for yes, 'no' for no. Only output one token after 'ANSWER: '",
             },
         ]
         eval_prompt = (
