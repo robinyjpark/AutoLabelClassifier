@@ -16,7 +16,7 @@ bibtex:
                Andrew Zisserman},
   title     = {Automated Spinal MRI Labelling from Reports Using a Large Language Model},
   booktitle = {MICCAI},
-  year      = {20214}
+  year      = {2024}
 }
 ```
 
