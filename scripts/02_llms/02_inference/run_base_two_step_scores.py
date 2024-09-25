@@ -93,7 +93,7 @@ def run_llm(cfg: DictConfig) -> None:
         data = cfg.hern_train_data
         definition = cfg.herniation_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
-        labels = df_test['label']
+        labels = df_test['global_label']
         column = 'report'
     
     elif cfg.condition == 'herniation_test': 
@@ -101,7 +101,7 @@ def run_llm(cfg: DictConfig) -> None:
         data = cfg.hern_test_data
         definition = cfg.herniation_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
-        labels = df_test['label']
+        labels = df_test['global_label']
         column = 'report'
 
     elif cfg.condition == 'ALL_STENOSIS': 
@@ -130,6 +130,29 @@ def run_llm(cfg: DictConfig) -> None:
         condition = 'herniation'
         data = '/work/robinpark/PID010A_clean/all_osclmric_reports.csv'
         definition = cfg.herniation_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        column = 'report'
+
+    elif cfg.condition == 'spon_train': 
+        condition = 'spondylolisthesis'
+        data = cfg.spon_train_data
+        definition = cfg.spon_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
+        column = 'report'
+    
+    elif cfg.condition == 'spon_test': 
+        condition = 'spondylolisthesis'
+        data = cfg.spon_test_data
+        definition = cfg.spon_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
+        column = 'report'
+
+    elif cfg.condition == 'ALL_SPON': 
+        condition = 'spondylolisthesis'
+        data = '/work/robinpark/PID010A_clean/all_osclmric_reports.csv'
+        definition = cfg.spon_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
         column = 'report'
 
@@ -223,7 +246,7 @@ def run_llm(cfg: DictConfig) -> None:
     labeled_reports = pd.DataFrame(
         {'report_no_hist': df_test[column],
         'pred_conclusion': li_con,
-        #'labels': labels, ## comment out if running on data without existing labels 
+        # 'labels': labels, ## comment out if running on data without existing labels 
         'yes_score': li_yes,
         'no_score': li_no})
     

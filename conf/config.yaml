@@ -23,6 +23,9 @@ osc_test_data: ${osc_reports}/osclmric_reports_labeled_test.csv
 ce_train_data: ${osc_reports}/manually_labeled_cauda_equina_train.csv
 ce_test_data: ${osc_reports}/manually_labeled_cauda_equina_test.csv
 
+spon_train_data: ${osc_reports}/manually_labeled_spon_train.csv
+spon_test_data: ${osc_reports}/manually_labeled_spon_test.csv
+
 hern_train_data: ${osc_reports}/herniation_reports_labeled_train.csv
 hern_test_data: ${osc_reports}/herniation_reports_labeled_test.csv
 
@@ -35,12 +38,13 @@ gpt_model: gpt-4
 base_model: meta-llama/Meta-Llama-3-8B-Instruct # Update based on preferred base model, e.g. HuggingFaceH4/zephyr-7b-beta 
 model_name: llama3 # Update based on model name
 
-condition: cancer # Update based on condition, e.g. stenosis
+condition: spondylolisthesis # Update based on condition, e.g. stenosis
 
 cancer_definition: Spinal cancer includes malignant lesions that originate from the spine or spinal cord and metastatic or secondary tumours that have spread from another site to the spine.
 stenosis_definition: Stenosis is any narrowing or compression of the spinal canal or nerves, including disc protrusions, impingement of nerve roots, or compromise of recesses.
-cauda_equina_definition: Cauda equina compression is the compression of a collection of nerve roots called the cauda equina.
-herniation_definition: Herniation is a condition in which a disc in the spine ruptures, and the disc nucleus is displaced from intervertebral space.
+cauda_equina_definition: Cauda equina compression is the compression of a collection of nerve roots called the cauda equina, distinct from cauda equina syndrome; if the patient has cauda equina compression, the report will explicitly state its presence.
+herniation_definition: Herniation is a condition in which a disc in the spine ruptures, and the disc nucleus is displaced from intervertebral space; it is more severe condition than disc protrusion or bulging, and if the patient has herniation, the report will explicitly state its presence.
+spon_definition: Spondylolisthesis is a condition in which a vertebra slips out of place onto the bone below it.
 
 ivd: False # Set True if extracting labels by IVD level
 ivd_level: L3-L4 # Update based on IVD level, e.g. L5-S1

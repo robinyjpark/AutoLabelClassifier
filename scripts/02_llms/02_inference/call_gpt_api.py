@@ -48,7 +48,15 @@ def save_api_results(cfg: DictConfig) -> None:
         data = cfg.hern_test_data
         definition = cfg.herniation_definition
         df_labeled = pd.read_csv(data, low_memory=False, index_col=0)
-        labels = df_labeled['label']
+        labels = df_labeled['global_label']
+        column = 'report'
+    
+    elif cfg.condition == 'spon_test': 
+        condition = 'spondylolisthesis'
+        data = cfg.spon_test_data
+        definition = cfg.spon_definition
+        df_labeled = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_labeled['global_label']
         column = 'report'
 
     user_prompt = f"{definition} Based on the report, does the patient have {condition}? Answer 'yes' for yes, 'no' for no. Only output one token after 'ANSWER: '."
