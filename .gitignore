@@ -11,6 +11,7 @@ scripts/03_img_preprocessing/*.out
 scripts/03_img_preprocessing/06_osclmric_gradings.py
 
 scripts/wandb
+scripts/outputs
 scripts/*.out
 scripts/*.sh
 
@@ -18,17 +19,16 @@ notebooks/check_ncimi_scan_quality.ipynb
 notebooks/test.ipynb
 notebooks/convert_reports_to_images.ipynb
 
-scripts/01_rep_preprocessing/*cauda_equina*
-scripts/01_rep_preprocessing/*herniation*
-
 scripts/03_img_preprocessing/01c_run_spinenet_ce.py
 scripts/03_img_preprocessing/*cauda_equina.py
 scripts/03_img_preprocessing/*herniation.py
+scripts/03_img_preprocessing/osclmric_gradings.py
 
 notebooks/*cauda_equina.ipynb
 notebooks/*herniation.ipynb
 
 scripts/02_llms/01_training/run_lora_conclusion_training_llama.py
+scripts/02_llms/02_inference/outputs
 
 # Default python ignores from https://github.com/github/gitignore/blob/main/Python.gitignore
 

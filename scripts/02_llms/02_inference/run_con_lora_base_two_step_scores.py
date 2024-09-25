@@ -98,7 +98,7 @@ def run_llm(cfg: DictConfig) -> None:
         data = cfg.hern_train_data
         definition = cfg.herniation_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
-        labels = df_test['label']
+        labels = df_test['global_label']
         column = 'report'
     
     elif cfg.condition == 'herniation_test': 
@@ -106,7 +106,23 @@ def run_llm(cfg: DictConfig) -> None:
         data = cfg.hern_test_data
         definition = cfg.herniation_definition
         df_test = pd.read_csv(data, low_memory=False, index_col=0)
-        labels = df_test['label']
+        labels = df_test['global_label']
+        column = 'report'
+
+    elif cfg.condition == 'spon_train': 
+        condition = 'spondylolisthesis'
+        data = cfg.spon_train_data
+        definition = cfg.spon_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
+        column = 'report'
+    
+    elif cfg.condition == 'spon_test': 
+        condition = 'spondylolisthesis'
+        data = cfg.spon_test_data
+        definition = cfg.spon_definition
+        df_test = pd.read_csv(data, low_memory=False, index_col=0)
+        labels = df_test['global_label']
         column = 'report'
 
     elif cfg.condition == 'ALL_STENOSIS': 
