@@ -65,7 +65,7 @@ def parser():
     label_parser.add_argument(
         "--model_name",
         type=str,
-        default="HuggingFaceH4/zephyr-7b-beta",
+        default="meta-llama/Meta-Llama-3-8B-Instruct",
         help="Name of the model to use, this should be a HuggingFace model (see https://huggingface.co/docs/transformers/en/main_classes/model for more details)",
     )
     label_parser.add_argument(
