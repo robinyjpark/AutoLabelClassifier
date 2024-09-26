@@ -21,13 +21,15 @@ def generate_summary(model, tokenizer, prompt, device, ASSISTANT_HEADER):
 
 
 @torch.no_grad()
-def generate_yes_no_scores(model, tokenizer, YES_ID, NO_ID, eval_prompt):
-    input_ids = tokenizer(eval_prompt, return_tensors="pt")["input_ids"].to("cuda")
+def generate_probability_present(model, tokenizer, device, YES_ID, NO_ID, eval_prompt):
+    input_ids = tokenizer(eval_prompt, return_tensors="pt")["input_ids"].to(device)
     model_out = model(input_ids)
     final_output_token_logits = model_out.logits[0][-1]
     yes_score = final_output_token_logits[YES_ID].cpu().item()
     no_score = final_output_token_logits[NO_ID].cpu().item()
-    return yes_score, no_score
+    # do softmax over present or not score
+    p_present = torch.nn.functional.softmax(final_output_token_logits[[YES_ID,NO_ID]],dim=0).cpu()[0].item()
+    return p_present
 
 
 def main(
@@ -37,6 +39,7 @@ def main(
     output: str,
     model_name: str,
     transformers_cache: str,
+    threshold: float = 0.5,
     device="cuda:0",
 ) -> None:
     """
@@ -56,13 +59,15 @@ def main(
     print("Using cache at: ", os.getenv("TRANSFORMERS_CACHE"))
 
     print(f"Loading model and tokenizer: {model_name}")
+
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
     )
-    model.config.use_cache = True
     model.half()
     model.to(device)
-
+        
+    model.config.use_cache = True
+    
     tokenizer = AutoTokenizer.from_pretrained(
         model_name,
         add_bos_token=True,
@@ -88,15 +93,16 @@ def main(
         Tell the truth and answer as precisely as possible.  
     """
 
-    # TODO: load in data
-    df = pd.read_csv(data, low_memory=False)
+    # we expect the data to be a csv file with the first column being the patient id
+    # there should be a column called 'report' that contains the text to label 
+    df = pd.read_csv(data, low_memory=False, index_col=0)
     print(f"Loaded in data with shape: {df.shape}")
 
     print("Making prompts...")
     outputs = []
-    for i in tqdm(range(len(df))):
-        pat_id = df["pat_id"].iloc[i]
-        example = df["report"].iloc[i]
+    for index, sample in tqdm(df.iterrows(), total=len(df)):
+        example = sample.report
+        identifier = index
 
         messages = [
             {"role": "system", "content": f"{prompt1}/nReport: {example}"},
@@ -119,21 +125,22 @@ def main(
             tokenizer.apply_chat_template(messages, tokenize=False)
             + f"{ASSISTANT_HEADER}\nANSWER: "
         )
-        yes_score, no_score = generate_yes_no_scores(
-            model, tokenizer, YES_ID, NO_ID, eval_prompt
+        p_present = generate_probability_present(
+            model, tokenizer, device, YES_ID, NO_ID, eval_prompt
         )
+        prediction = "yes" if p_present > threshold else "no"
 
         print("Report: ", example)
         print("Summary: ", gen_summary)
-        print("Yes Score: ", yes_score)
-        print("No Score: ", no_score)
+        print("Probability: ", p_present)
+        print("Disease Present Prediction: ", prediction)
         outputs.append(
             {
-                "pat_id": pat_id,
+                "id": identifier,
                 "report": example,
                 "summary": gen_summary,
-                f"yes_score": yes_score,
-                f"no_score": no_score,
+                f"probability": p_present,
+                f"prediction": prediction,
             }
         )
 

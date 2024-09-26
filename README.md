@@ -1,6 +1,6 @@
 # Automated Spinal MRI Labelling from Reports Using a Large Language Model
 
-This repository contains code for experiments in "Automated Spinal MRI Labelling from Reports Using a Large Language Model" (accepted to MICCAI 2024). The data used are not publicly available and thus are not provided in this repository.
+This repository contains code for experiments in "Automated Spinal MRI Labelling from Reports Using a Large Language Model" (accepted to MICCAI 2024; see preprint [here](https://papers.miccai.org/miccai-2024/paper/1510_paper.pdf)). The data used are not publicly available and thus are not provided in this repository.
 
 The code has been tested on python3.10 on ubuntu linux. If you use or adapt this software for your own work, please cite:
 
@@ -44,11 +44,3 @@ auto_label_classifier label --data INPUT_REPORTS_CSV \ # path to csv with report
 ## Reproducing the paper
 
 The experiments conducted for the paper are in the `scripts` and `notebooks` directories.
-
-To-dos:
-- [x] Add citation + bibtex to README (important)
-- [x] Add interface to llama model (important)
-- [ ] Add license, let's talk about this soon (important)
-- [ ] Add single stage option to report labelling pipeline
-- [ ] CLI interface for instruction finetuning the model
-- [ ] Add option to specify command line arguments by yaml file

@@ -1,4 +1,4 @@
-pat_id,report,summary,yes_score,no_score
+id,report,summary,probability,prediction
 0,"
 CLINICAL HISTORY: Neck pain. No known injury.
 TECHNIQUE: Sagittal and axial multiecho imaging through the cervical spine without contrast.
@@ -34,7 +34,7 @@ mild bilateral foraminal stenosis at C6-C7.
 Thank you for your kind referral of this patient. We appreciate the opportunity to participate in
 this patient's care.
 ","
-The medical report describes findings related to stenosis, specifically at the level of C5-C6. A broad-based mixed protrusion is observed, extending into the foramina and causing ventral thecal sac effacement and leftward flattening of the cord. This results in moderate to severe bilateral foraminal stenosis in conjunction with uncovertebral joint spurring and facet hypertrophy. Additionally, mild central canal stenosis is noted at this level. At C6-C7, mild posterior disc bulging with facet hypertrophy and uncovertebral joint spurring leads to mild bilateral foraminal stenosis. Overall, these findings indicate multilevel degenerative disc disease (DDD) with disc protrusions and impingement of nerve roots, leading to compression of both the spinal canal and nerve root recesses.</s>",24.28125,0.56494140625
+The medical report describes findings related to stenosis, specifically at the level of C5-C6. A broad-based mixed protrusion is observed, extending into the foramina and causing ventral thecal sac effacement and leftward flattening of the cord. This results in moderate to severe bilateral foraminal stenosis in conjunction with uncovertebral joint spurring and facet hypertrophy. Additionally, mild central canal stenosis is noted at this level. At C6-C7, mild posterior disc bulging with facet hypertrophy and uncovertebral joint spurring leads to mild bilateral foraminal stenosis. Overall, these findings indicate multilevel degenerative disc disease (DDD) with disc protrusions and impingement of nerve roots, leading to compression of both the spinal canal and nerve root recesses.</s>",1.0,yes
 1,"
 PROCEDURE:
 MRI of lumbosacral spine without/with IV contrast.
@@ -87,4 +87,4 @@ Note that the stability of findings cannot be determined in the absence of prior
 comparison/correlation.
 Correlation with prior imaging is advised to document stability of findings described.
 ","
-The MRI report reveals evidence of stenosis at the L2-L3 level. There is moderate nonenhancing bi foraminal broad-based disk bulging causing mild-to-moderate right greater than left neural foramina narrowing. Additionally, there is moderate acquired spinal canal stenosis due to enhancing peridural fibrosis with an asymmetric more focal extrinsic impression on the right lateral ventral thecal sac. At the same level, negligible spondylolisthesis of L2 on L3 is also observed. These findings suggest compression or narrowing of the spinal canal or nerves, which may cause symptoms such as pain, numbness, weakness, or bowel/bladder dysfunction. It's essential to correlate these findings with previous imaging to determine if they represent progression or stability.</s>",21.921875,1.1025390625
+The MRI report reveals evidence of stenosis at the L2-L3 level. There is moderate nonenhancing bi foraminal broad-based disk bulging causing mild-to-moderate right greater than left neural foramina narrowing. Additionally, there is moderate acquired spinal canal stenosis due to enhancing peridural fibrosis with an asymmetric more focal extrinsic impression on the right lateral ventral thecal sac. At the same level, negligible spondylolisthesis of L2 on L3 is also observed. These findings suggest compression or narrowing of the spinal canal or nerves, which may cause symptoms such as pain, numbness, weakness, or bowel/bladder dysfunction. It's essential to correlate these findings with previous imaging to determine if they represent progression or stability.</s>",1.0,yes
