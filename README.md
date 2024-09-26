@@ -10,11 +10,11 @@ bibtex:
 
 ```
 @inproceedings{Park24AutomatedLabelling,
-  author    = {Rhydian Windsor and
+  author    = {Robin Y Park and
+               Rhydian Windsor and
                Amir Jamaludin and
-               Timor Kadir and
                Andrew Zisserman},
-  title     = {Automated Spinal MRI Labelling from Reports Using a Large Language Model},
+  title     = {Automated Spinal {MRI} Labelling from Reports Using a Large Language Model},
   booktitle = {MICCAI},
   year      = {2024}
 }
