@@ -2,7 +2,7 @@
 
 ![Labelling diagram](https://github.com/robinyjpark/AutoLabelClassifier/blob/main/label_process_simple.png)
 
-See the [Project Page](https://robinyjpark.github.io/auto-report-labeller).
+See the [Project Page](https://www.robots.ox.ac.uk/~vgg/research/auto-report-labeller/).
 
 This repository contains code for experiments in "Automated Spinal MRI Labelling from Reports Using a Large Language Model" (accepted to MICCAI 2024; see preprint [here](https://papers.miccai.org/miccai-2024/paper/1510_paper.pdf)). The data used are not publicly available and thus are not provided in this repository.
 
@@ -30,7 +30,9 @@ bibtex:
 `make venv; source venv/bin/activate`
 Alternatively you can try to install the repo on top of an existing venv with `pip install .`
 
-2. Try to run the example by `make test`. This will attempt to label sample reports in the `example_data` directory. Sample reports were sourced from [USARAD](https://usarad.com/sample-reports/sample-mri.html).
+2. Try to run the example by `make test`. This will attempt to label sample reports in the `example_data` directory for spinal stenosis. Sample reports were sourced from [USARAD](https://usarad.com/sample-reports/sample-mri.html).
+
+3. The sample reports table contains two columns: `pat_id` (patient ID) and `report`. The output file will add the following columns: `summary` (the LLM's summary of the report focused on the condition of interest), `probability` (normalised score for presence of condition) and `prediction` (yes or no, based on probability and threshold).
 
 ## CLI Usage
 
