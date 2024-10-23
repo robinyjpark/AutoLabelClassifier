@@ -4,23 +4,21 @@
 
 See the [Project Page](https://www.robots.ox.ac.uk/~vgg/research/auto-report-labeller/).
 
-This repository contains code for experiments in "Automated Spinal MRI Labelling from Reports Using a Large Language Model" (accepted to MICCAI 2024; see preprint [here](https://papers.miccai.org/miccai-2024/paper/1510_paper.pdf)). The data used are not publicly available and thus are not provided in this repository.
+This repository contains code for experiments in "Automated Spinal MRI Labelling from Reports Using a Large Language Model" (**MICCAI 2024 Spotlight**; see paper [here](https://www.robots.ox.ac.uk/~vgg/publications/2024/Park24/park24.pdf)). The data used are not publicly available and thus are not provided in this repository.
 
 The code has been tested on python3.10 on ubuntu linux. If you use or adapt this software for your own work, please cite:
 
-Park, R. Y., Windsor, R., Jamaludin, A., Zisserman, A. "Automated Spinal MRI Labelling from Reports Using a Large Language Model" In: Proceedings of 27th International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI) 2024
+Park, R. Y., Windsor, R., Jamaludin, A., Zisserman, A. "Automated Spinal MRI Labelling from Reports Using a Large Language Model" In: Proceedings of 27th International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI) 2024.
 
 bibtex:
 
 ```
-@inproceedings{Park24AutomatedLabelling,
-  author    = {Robin Y Park and
-               Rhydian Windsor and
-               Amir Jamaludin and
-               Andrew Zisserman},
-  title     = {Automated Spinal {MRI} Labelling from Reports Using a Large Language Model},
-  booktitle = {MICCAI},
-  year      = {2024}
+@inproceedings{Park24,
+   author    = {Robin Y. Park and Rhydian Windsor and Amir Jamaludin and Andrew Zisserman},
+   booktitle = {International Conference on Medical Image Computing and Computer-Assisted Intervention},
+   title     = {Automated Spinal MRI Labelling from Reports Using a Large Language Model},
+   year      = {2024},
+   pages     = {101--111}
 }
 ```
 
